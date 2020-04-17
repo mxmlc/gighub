@@ -1,10 +1,10 @@
-﻿@model IEnumerable<GigHub.Models.Gig>
+﻿@model GigHub.ViewModels.HomeViewModel
 @{
     ViewBag.Title = "Home Page";
 }
 
 <ul class="gigs">
-    @foreach (var gig in Model)
+    @foreach (var gig in Model.UpcomingGigs)
     {
     <li>
         <div class="date">
@@ -18,11 +18,18 @@
         <div class="details">
             <span class="artist">
                 @gig.Artist.Name
+                @if (Model.ShowActions)
+                {
+                    <button data-user-id="@gig.ArtistId" class="btn btn-link btn-sm js-toggle-follow">Suivre ?</button>
+                }
             </span>
             <span class="genre">
                 @gig.Genre.Name
             </span>
-            <button data-gig-id="@gig.Id" class="btn btn-default btn-sm pull-right js-toggle-attendance">Allez-y ?</button>
+            @if (Model.ShowActions)
+            {
+                <button data-gig-id="@gig.Id" class="btn btn-default btn-sm pull-right js-toggle-attendance">Allez-y ?</button>
+            }
         </div>
     </li>
     }
@@ -36,6 +43,16 @@
                 $.post("api/attendances", { gigId: button.attr("data-gig-id") })
                     .done(function () {
                         button.removeClass("btn-default").addClass("btn-info").text("Going");
+                    })
+                    .fail(function () {
+                        alert("Désolé, l'appel a plainté!")
+                    });
+            });
+            $(".js-toggle-follow").click(function (e) {
+                var button = $(e.target);
+                $.post("/api/followings", { followeeId: button.attr("data-user-id") })
+                    .done(function () {
+                        button.text("Suivi")
                     })
                     .fail(function () {
                         alert("Désolé, l'appel a plainté!")
